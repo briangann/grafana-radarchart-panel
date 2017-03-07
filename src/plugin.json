@@ -1,0 +1,41 @@
+{
+    "type": "panel",
+    "name": "D3 Radar Chart",
+    "id": "briangann-radarchart-panel",
+    "info": {
+        "description": "D3-based Radar Chart panel for Grafana",
+        "author": {
+            "name": "Brian Gann (bkgann@gmail.com)",
+            "url": "https://github.com/briangann"
+        },
+        "keywords": ["radarchart", "panel"],
+        "logos": {
+            "small": "img/Logo_D3.svg",
+            "large": "img/Logo_D3.svg"
+        },
+        "links": [{
+            "name": "Project site",
+            "url": "https://github.com/briangann/grafana-radarchart-panel"
+        }, {
+            "name": "MIT License",
+            "url": "https://github.com/briangann/grafana-radarchart-panel/blob/master/LICENSE"
+        }],
+        "screenshots": [{
+            "name": "Showcase",
+            "path": "screenshots/default-radarchart.png"
+        }, {
+            "name": "Options",
+            "path": "screenshots/options.png"
+        }, {
+            "name": "Thresholding",
+            "path": "screenshots/thresholding.png"
+        }],
+        "version": "0.0.1",
+        "updated": "2017-03-04"
+    },
+
+    "dependencies": {
+        "grafanaVersion": "3.x.x",
+        "plugins": []
+    }
+}
