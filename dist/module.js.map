@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/module.js"],"names":["D3RadarChartPanelCtrl"],"mappings":";;;;;;;;AAAQA,2B,SAAAA,qB;;;2BAGNA,qB","file":"module.js","sourcesContent":["import {D3RadarChartPanelCtrl} from  './ctrl';\n\nexport {\n  D3RadarChartPanelCtrl as PanelCtrl\n};\n"]}
