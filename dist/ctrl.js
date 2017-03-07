@@ -3,7 +3,7 @@
 System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'app/core/config', 'app/core/time_series2', './external/d3.v3.min', './css/panel.css!', './external/d3radar'], function (_export, _context) {
   "use strict";
 
-  var MetricsPanelCtrl, _, $, kbn, config, TimeSeries, d3, _createClass, panelDefaults, D3RadarPanelCtrl;
+  var MetricsPanelCtrl, _, $, kbn, config, TimeSeries, d3, _createClass, panelDefaults, D3RadarChartPanelCtrl;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -108,13 +108,13 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           roundStrokes: false }
       };
 
-      D3RadarPanelCtrl = function (_MetricsPanelCtrl) {
-        _inherits(D3RadarPanelCtrl, _MetricsPanelCtrl);
+      _export('MetricsPanelCtrl', _export('D3RadarChartPanelCtrl', D3RadarChartPanelCtrl = function (_MetricsPanelCtrl) {
+        _inherits(D3RadarChartPanelCtrl, _MetricsPanelCtrl);
 
-        function D3RadarPanelCtrl($scope, $injector, alertSrv) {
-          _classCallCheck(this, D3RadarPanelCtrl);
+        function D3RadarChartPanelCtrl($scope, $injector, alertSrv) {
+          _classCallCheck(this, D3RadarChartPanelCtrl);
 
-          var _this = _possibleConstructorReturn(this, (D3RadarPanelCtrl.__proto__ || Object.getPrototypeOf(D3RadarPanelCtrl)).call(this, $scope, $injector));
+          var _this = _possibleConstructorReturn(this, (D3RadarChartPanelCtrl.__proto__ || Object.getPrototypeOf(D3RadarChartPanelCtrl)).call(this, $scope, $injector));
 
           // merge existing settings with our defaults
           _.defaults(_this.panel, panelDefaults);
@@ -142,7 +142,7 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           return _this;
         }
 
-        _createClass(D3RadarPanelCtrl, [{
+        _createClass(D3RadarChartPanelCtrl, [{
           key: 'onInitEditMode',
           value: function onInitEditMode() {
             // determine the path to this plugin
@@ -480,8 +480,8 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           }
         }]);
 
-        return D3RadarPanelCtrl;
-      }(MetricsPanelCtrl);
+        return D3RadarChartPanelCtrl;
+      }(MetricsPanelCtrl)));
 
       D3RadarChartPanelCtrl.templateUrl = 'partials/template.html';
 

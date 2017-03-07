@@ -52,7 +52,7 @@ const panelDefaults = {
   },
 };
 
-class D3RadarPanelCtrl extends MetricsPanelCtrl {
+class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
 
   constructor($scope, $injector, alertSrv) {
     super($scope, $injector);
