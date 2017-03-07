@@ -58,7 +58,6 @@ Then browse to http://localhost:3000
 
 This panel is based on large portions of these excellent D3 examples:
 * https://oliverbinns.com/articles/D3js-radar/
-* http://bl.ocks.org/tomerd/1499279
 
 #### Changelog
 
