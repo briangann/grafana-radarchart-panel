@@ -59,6 +59,10 @@ Then browse to http://localhost:3000
 This panel is based on large portions of these excellent D3 examples:
 * https://oliverbinns.com/articles/D3js-radar/
 
+* https://www.visualcinnamon.com/2015/10/different-look-d3-radar-chart.html
+
+* https://github.com/TennisVisuals/updating-radar-chart
+
 #### Changelog
 
 

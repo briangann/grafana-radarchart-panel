@@ -6,6 +6,11 @@ import config from 'app/core/config';
 import TimeSeries from 'app/core/time_series2';
 //import * as d3 from '../bower_components/d3/d3.js';
 import * as d3 from './external/d3.v3.min';
+//import * as irdc from './external/D3ImprovedRadarChart/D3ImprovedRadarChart';
+//import displayRADAR from './external/radarChart';
+import './external/updating-radar-chart/radarChart';
+//import './external/D3ImprovedRadarChart/Library/d3-legend-new.min';
+import './external/d3-svg-legend/d3-legend.min';
 import './css/panel.css!';
 import './external/d3radar';
 
@@ -49,6 +54,7 @@ const panelDefaults = {
     opacityCircles: 0.1, 	//The opacity of the circles of each blob
     strokeWidth: 2, 		//The width of the stroke around each blob
     roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
+    radarRadius: 0, // 0 for autosize
   },
 };
 
@@ -163,6 +169,10 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
     //console.log("Creating SVG id: " + this.panel.radarDivId);
 
     // check which is smaller, the height or the width and set the radius to be half of the lesser
+    if (this.panel.radar.radarRadius === undefined) {
+      this.panel.radar.radarRadius = 0;
+    }
+
     var tmpradarRadius = parseFloat(this.panel.radar.radarRadius);
     // autosize if radius is set to zero
     if (this.panel.radar.radarRadius === 0) {
@@ -182,9 +192,40 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
       .classed("svg-content-responsive", true)
       .append("g");
 
+      var xdata = [
+                  [//iPhone
+                  {axis:"Battery Life",value:0.22},
+                  {axis:"Brand",value:0.28},
+                  {axis:"Contract Cost",value:0.29},
+                  {axis:"Design And Quality",value:0.17},
+                  {axis:"Have Internet Connectivity",value:0.22},
+                  {axis:"Large Screen",value:0.02},
+                  {axis:"Price Of Device",value:0.21},
+                  {axis:"To Be A Smartphone",value:0.50}
+                  ],[//Samsung
+                  {axis:"Battery Life",value:0.27},
+                  {axis:"Brand",value:0.16},
+                  {axis:"Contract Cost",value:0.35},
+                  {axis:"Design And Quality",value:0.13},
+                  {axis:"Have Internet Connectivity",value:0.20},
+                  {axis:"Large Screen",value:0.13},
+                  {axis:"Price Of Device",value:0.35},
+                  {axis:"To Be A Smartphone",value:0.38}
+                  ],[//Nokia Smartphone
+                  {axis:"Battery Life",value:0.26},
+                  {axis:"Brand",value:0.10},
+                  {axis:"Contract Cost",value:0.30},
+                  {axis:"Design And Quality",value:0.14},
+                  {axis:"Have Internet Connectivity",value:0.22},
+                  {axis:"Large Screen",value:0.04},
+                  {axis:"Price Of Device",value:0.41},
+                  {axis:"To Be A Smartphone",value:0.30}
+                  ]
+                ];
+
     var opt = {
-      w: this.panel.radar.w,				//Width of the circle
-      h: this.panel.radar.h,				//Height of the circle
+      w: width,				//Width of the circle
+      h: height,				//Height of the circle
       margin: this.panel.radar.margin, //The margins of the SVG
       levels: this.panel.radar.levels,				//How many levels or inner circles should be drawn
       maxValue: this.panel.radar.maxValue, 			//What is the value that the biggest circle will represent
@@ -195,8 +236,17 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
       opacityCircles: this.panel.radar.opacityCircles, 	//The opacity of the circles of each blob
       strokeWidth: this.panel.radar.strokeWidth, 		//The width of the stroke around each blob
       roundStrokes: this.panel.radar.roundStrokes,	//If true the area and stroke will follow a round path (cardinal-closed)
-      color: d3.scale.category10()	//Color function
+      color: d3.scale.category10(),	//Color function
+      svgWidth: width,
+      svgHeight: height,
+      svgID: this.panel.radarDivId,
+      containerDivId: this.containerDivId,
+      data: xdata,
     };
+
+    //var meh2 = displayRADAR(opt.svgID, xdata, opt);
+
+    //var meh = RadarChart(opt.svgID, [], opt);
     this.radarObject = new drawRadarChart(svg,opt);
     this.svg = svg;
   }

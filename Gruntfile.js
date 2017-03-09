@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       externals: {
         cwd: 'src',
         expand: true,
-        src: ['**/external/*'],
+        src: ['**/external/**'],
         dest: 'dist'
       },
       bower_libs: {

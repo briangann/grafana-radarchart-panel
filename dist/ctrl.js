@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'app/core/config', 'app/core/time_series2', './external/d3.v3.min', './css/panel.css!', './external/d3radar'], function (_export, _context) {
+System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'app/core/config', 'app/core/time_series2', './external/d3.v3.min', './external/updating-radar-chart/radarChart', './external/d3-svg-legend/d3-legend.min', './css/panel.css!', './external/d3radar'], function (_export, _context) {
   "use strict";
 
   var MetricsPanelCtrl, _, $, kbn, config, TimeSeries, d3, _createClass, panelDefaults, D3RadarChartPanelCtrl;
@@ -59,7 +59,7 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
       TimeSeries = _appCoreTime_series.default;
     }, function (_externalD3V3Min) {
       d3 = _externalD3V3Min;
-    }, function (_cssPanelCss) {}, function (_externalD3radar) {}],
+    }, function (_externalUpdatingRadarChartRadarChart) {}, function (_externalD3SvgLegendD3LegendMin) {}, function (_cssPanelCss) {}, function (_externalD3radar) {}],
     execute: function () {
       _createClass = function () {
         function defineProperties(target, props) {
@@ -105,7 +105,8 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           dotRadius: 4, //The size of the colored circles of each blog
           opacityCircles: 0.1, //The opacity of the circles of each blob
           strokeWidth: 2, //The width of the stroke around each blob
-          roundStrokes: false }
+          roundStrokes: false, //If true the area and stroke will follow a round path (cardinal-closed)
+          radarRadius: 0 }
       };
 
       _export('MetricsPanelCtrl', _export('D3RadarChartPanelCtrl', D3RadarChartPanelCtrl = function (_MetricsPanelCtrl) {
@@ -225,6 +226,10 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
             //console.log("Creating SVG id: " + this.panel.radarDivId);
 
             // check which is smaller, the height or the width and set the radius to be half of the lesser
+            if (this.panel.radar.radarRadius === undefined) {
+              this.panel.radar.radarRadius = 0;
+            }
+
             var tmpradarRadius = parseFloat(this.panel.radar.radarRadius);
             // autosize if radius is set to zero
             if (this.panel.radar.radarRadius === 0) {
@@ -238,9 +243,14 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
             // set the width and height to be double the radius
             var svg = d3.select(this.panel.svgContainer).append("svg").attr("width", Math.round(tmpradarRadius * 2) + "px").attr("height", Math.round(tmpradarRadius * 2) + "px").attr("id", this.panel.radarDivId).classed("svg-content-responsive", true).append("g");
 
+            var xdata = [[//iPhone
+            { axis: "Battery Life", value: 0.22 }, { axis: "Brand", value: 0.28 }, { axis: "Contract Cost", value: 0.29 }, { axis: "Design And Quality", value: 0.17 }, { axis: "Have Internet Connectivity", value: 0.22 }, { axis: "Large Screen", value: 0.02 }, { axis: "Price Of Device", value: 0.21 }, { axis: "To Be A Smartphone", value: 0.50 }], [//Samsung
+            { axis: "Battery Life", value: 0.27 }, { axis: "Brand", value: 0.16 }, { axis: "Contract Cost", value: 0.35 }, { axis: "Design And Quality", value: 0.13 }, { axis: "Have Internet Connectivity", value: 0.20 }, { axis: "Large Screen", value: 0.13 }, { axis: "Price Of Device", value: 0.35 }, { axis: "To Be A Smartphone", value: 0.38 }], [//Nokia Smartphone
+            { axis: "Battery Life", value: 0.26 }, { axis: "Brand", value: 0.10 }, { axis: "Contract Cost", value: 0.30 }, { axis: "Design And Quality", value: 0.14 }, { axis: "Have Internet Connectivity", value: 0.22 }, { axis: "Large Screen", value: 0.04 }, { axis: "Price Of Device", value: 0.41 }, { axis: "To Be A Smartphone", value: 0.30 }]];
+
             var opt = {
-              w: this.panel.radar.w, //Width of the circle
-              h: this.panel.radar.h, //Height of the circle
+              w: width, //Width of the circle
+              h: height, //Height of the circle
               margin: this.panel.radar.margin, //The margins of the SVG
               levels: this.panel.radar.levels, //How many levels or inner circles should be drawn
               maxValue: this.panel.radar.maxValue, //What is the value that the biggest circle will represent
@@ -251,8 +261,17 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
               opacityCircles: this.panel.radar.opacityCircles, //The opacity of the circles of each blob
               strokeWidth: this.panel.radar.strokeWidth, //The width of the stroke around each blob
               roundStrokes: this.panel.radar.roundStrokes, //If true the area and stroke will follow a round path (cardinal-closed)
-              color: d3.scale.category10() //Color function
+              color: d3.scale.category10(), //Color function
+              svgWidth: width,
+              svgHeight: height,
+              svgID: this.panel.radarDivId,
+              containerDivId: this.containerDivId,
+              data: xdata
             };
+
+            //var meh2 = displayRADAR(opt.svgID, xdata, opt);
+
+            //var meh = RadarChart(opt.svgID, [], opt);
             this.radarObject = new drawRadarChart(svg, opt);
             this.svg = svg;
           }
