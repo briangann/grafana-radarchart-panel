@@ -71,7 +71,6 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
     this.initialized = false;
     this.panelContainer = null;
     this.panel.svgContainer = null;
-    this.svg = null;
     this.panelWidth = null;
     this.panelHeight = null;
     this.radarObject = null;
@@ -87,6 +86,10 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
     this.events.on('data-snapshot-load', this.onDataReceived.bind(this));
   }
 
+  // this is called ONCE when the edit button is selected.
+  // if the page is loaded initially on this page, we don't get a render
+  // called, need a way to fix this scenario
+  //
   onInitEditMode() {
     // determine the path to this plugin
     var panels = grafanaBootData.settings.panels;
@@ -117,45 +120,33 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
   }
 
   getPanelHeight() {
-    // panel can have a fixed height via options
-    var tmpPanelHeight = this.panel.height;
-    // if that is blank, try to get it from our row
-    if (typeof tmpPanelHeight === 'undefined') {
-      // get from the row instead
-      tmpPanelHeight = this.row.height;
-      // default to 250px if that was undefined also
+      // panel can have a fixed height via options
+      var tmpPanelHeight = this.$scope.ctrl.panel.height;
+      // if that is blank, try to get it from our row
       if (typeof tmpPanelHeight === 'undefined') {
-        tmpPanelHeight = 250;
+        // get from the row instead
+        tmpPanelHeight = this.row.height;
+        // default to 250px if that was undefined also
+        if (typeof tmpPanelHeight === 'undefined') {
+          tmpPanelHeight = 250;
+        }
       }
-    }
-    else {
-      // convert to numeric value
-      tmpPanelHeight = tmpPanelHeight.replace("px","");
-    }
-    var actualHeight = parseInt(tmpPanelHeight);
-    return actualHeight;
-  }
-
-  clearSVG() {
-    if ($('#'+this.panel.radarDivId).length) {
-      //console.log("Clearing SVG id: " + this.panel.radarDivId);
-      $('#'+this.panel.radarDivId).remove();
-    }
+      else {
+        // convert to numeric value
+        tmpPanelHeight = tmpPanelHeight.replace("px","");
+      }
+      var actualHeight = parseInt(tmpPanelHeight);
+      // grafana minimum height for a panel is 250px
+      if (actualHeight < 250) {
+        actualHeight = 250;
+      }
+      return actualHeight;
   }
 
   renderRadar() {
     // update the values to be sent to the radar constructor
     this.setValues(this.data);
-    //this.clearSVG();
-    //console.log("Looking for: #"+this.panel.radarDivId);
-    if ($('#'+this.panel.radarDivId).length) {
-      //console.log("Clearing SVG id: " + this.panel.radarDivId);
-      $('#'+this.panel.radarDivId).remove();
-    } else {
-      //console.log("not found...");
-    }
-    // use jQuery to get the height on our container
-    // TODO: Check if there is a "title" and offset size of radar accordingly
+    // Check if there is a "title" and offset size of radar accordingly
     var panelTitleOffset = 0;
     if (this.panel.title !== "") {
       panelTitleOffset = 25;
@@ -165,8 +156,6 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
     var margin = {top: 0, right: 0, bottom: 0, left: 10};
     var width = this.panelWidth;
     var height = this.panelHeight;
-
-    //console.log("Creating SVG id: " + this.panel.radarDivId);
 
     // check which is smaller, the height or the width and set the radius to be half of the lesser
     if (this.panel.radar.radarRadius === undefined) {
@@ -183,16 +172,7 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
       tmpradarRadius -= 10;
     }
 
-    // set the width and height to be double the radius
-    var svg = d3.select(this.panel.svgContainer)
-      .append("svg")
-      .attr("width", Math.round(tmpradarRadius*2) + "px")
-      .attr("height", Math.round(tmpradarRadius*2) + "px")
-      .attr("id", this.panel.radarDivId)
-      .classed("svg-content-responsive", true)
-      .append("g");
-
-      var xdata = [
+    var xdata = [
                   [//iPhone
                   {axis:"Battery Life",value:0.22},
                   {axis:"Brand",value:0.28},
@@ -239,18 +219,34 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
       color: d3.scale.category10(),	//Color function
       svgWidth: width,
       svgHeight: height,
-      svgID: this.panel.radarDivId,
       containerDivId: this.containerDivId,
       data: xdata,
     };
-
-    //var meh2 = displayRADAR(opt.svgID, xdata, opt);
-
-    //var meh = RadarChart(opt.svgID, [], opt);
-    this.radarObject = new drawRadarChart(svg,opt);
-    this.svg = svg;
+    // check if there is an object already and remove it
+    if (this.radarObject !== null) {
+      this.radarObject.clearRadarChart();
+    }
+    this.radarObject = new drawRadarChart(opt);
   }
 
+  // this is likely a bug in grafana, when entering inside edit mode,
+  // we do not get a render. force back to non-edit mode one time.
+  forceRender() {
+    if (this.editMode) {
+      this.changeView(false,true);
+      this.editPanel();
+    }
+    else {
+      if (this.fullscreen) {
+        this.exitFullscreen();
+        this.viewPanel();
+      }
+      else {
+        this.viewPanel();
+        this.exitFullscreen();
+      }
+    }
+  }
   removeValueMap(map) {
     var index = _.indexOf(this.panel.valueMaps, map);
     this.panel.valueMaps.splice(index, 1);
@@ -272,12 +268,12 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
   }
 
   link(scope, elem, attrs, ctrl) {
-    //console.log("d3radar inside link");
     var radarByClass = elem.find('.grafana-d3-radarchart');
-    //radarByClass.append('<center><div id="'+ctrl.containerDivId+'"></div></center>');
+    //debugger;
     radarByClass.append('<div id="'+ctrl.containerDivId+'"></div>');
     var container = radarByClass[0].childNodes[0];
     ctrl.setContainer(container);
+    this.forceRender();
     function render(){
     		ctrl.renderRadar();
     }
@@ -434,8 +430,8 @@ class D3RadarChartPanelCtrl extends MetricsPanelCtrl {
     var data = {};
     this.setValues(data);
     this.data = data;
-    if(this.radarObject !== null){
-      this.radarObject.updateRadar(data.value, data.valueFormatted, data.valueRounded);
+    if(this.radarObject !== null) {
+      this.radarObject.updateRadarChart(data.value, data.valueFormatted, data.valueRounded);
     } else {
       // render radar
       this.render();

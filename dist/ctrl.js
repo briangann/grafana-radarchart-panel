@@ -126,7 +126,6 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           _this.initialized = false;
           _this.panelContainer = null;
           _this.panel.svgContainer = null;
-          _this.svg = null;
           _this.panelWidth = null;
           _this.panelHeight = null;
           _this.radarObject = null;
@@ -142,6 +141,12 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           _this.events.on('data-snapshot-load', _this.onDataReceived.bind(_this));
           return _this;
         }
+
+        // this is called ONCE when the edit button is selected.
+        // if the page is loaded initially on this page, we don't get a render
+        // called, need a way to fix this scenario
+        //
+
 
         _createClass(D3RadarChartPanelCtrl, [{
           key: 'onInitEditMode',
@@ -174,7 +179,7 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
           key: 'getPanelHeight',
           value: function getPanelHeight() {
             // panel can have a fixed height via options
-            var tmpPanelHeight = this.panel.height;
+            var tmpPanelHeight = this.$scope.ctrl.panel.height;
             // if that is blank, try to get it from our row
             if (typeof tmpPanelHeight === 'undefined') {
               // get from the row instead
@@ -188,31 +193,18 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
               tmpPanelHeight = tmpPanelHeight.replace("px", "");
             }
             var actualHeight = parseInt(tmpPanelHeight);
-            return actualHeight;
-          }
-        }, {
-          key: 'clearSVG',
-          value: function clearSVG() {
-            if ($('#' + this.panel.radarDivId).length) {
-              //console.log("Clearing SVG id: " + this.panel.radarDivId);
-              $('#' + this.panel.radarDivId).remove();
+            // grafana minimum height for a panel is 250px
+            if (actualHeight < 250) {
+              actualHeight = 250;
             }
+            return actualHeight;
           }
         }, {
           key: 'renderRadar',
           value: function renderRadar() {
             // update the values to be sent to the radar constructor
             this.setValues(this.data);
-            //this.clearSVG();
-            //console.log("Looking for: #"+this.panel.radarDivId);
-            if ($('#' + this.panel.radarDivId).length) {
-              //console.log("Clearing SVG id: " + this.panel.radarDivId);
-              $('#' + this.panel.radarDivId).remove();
-            } else {}
-            //console.log("not found...");
-
-            // use jQuery to get the height on our container
-            // TODO: Check if there is a "title" and offset size of radar accordingly
+            // Check if there is a "title" and offset size of radar accordingly
             var panelTitleOffset = 0;
             if (this.panel.title !== "") {
               panelTitleOffset = 25;
@@ -222,8 +214,6 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
             var margin = { top: 0, right: 0, bottom: 0, left: 10 };
             var width = this.panelWidth;
             var height = this.panelHeight;
-
-            //console.log("Creating SVG id: " + this.panel.radarDivId);
 
             // check which is smaller, the height or the width and set the radius to be half of the lesser
             if (this.panel.radar.radarRadius === undefined) {
@@ -239,9 +229,6 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
               }
               tmpradarRadius -= 10;
             }
-
-            // set the width and height to be double the radius
-            var svg = d3.select(this.panel.svgContainer).append("svg").attr("width", Math.round(tmpradarRadius * 2) + "px").attr("height", Math.round(tmpradarRadius * 2) + "px").attr("id", this.panel.radarDivId).classed("svg-content-responsive", true).append("g");
 
             var xdata = [[//iPhone
             { axis: "Battery Life", value: 0.22 }, { axis: "Brand", value: 0.28 }, { axis: "Contract Cost", value: 0.29 }, { axis: "Design And Quality", value: 0.17 }, { axis: "Have Internet Connectivity", value: 0.22 }, { axis: "Large Screen", value: 0.02 }, { axis: "Price Of Device", value: 0.21 }, { axis: "To Be A Smartphone", value: 0.50 }], [//Samsung
@@ -264,16 +251,30 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
               color: d3.scale.category10(), //Color function
               svgWidth: width,
               svgHeight: height,
-              svgID: this.panel.radarDivId,
               containerDivId: this.containerDivId,
               data: xdata
             };
-
-            //var meh2 = displayRADAR(opt.svgID, xdata, opt);
-
-            //var meh = RadarChart(opt.svgID, [], opt);
-            this.radarObject = new drawRadarChart(svg, opt);
-            this.svg = svg;
+            // check if there is an object already and remove it
+            if (this.radarObject !== null) {
+              this.radarObject.clearRadarChart();
+            }
+            this.radarObject = new drawRadarChart(opt);
+          }
+        }, {
+          key: 'forceRender',
+          value: function forceRender() {
+            if (this.editMode) {
+              this.changeView(false, true);
+              this.editPanel();
+            } else {
+              if (this.fullscreen) {
+                this.exitFullscreen();
+                this.viewPanel();
+              } else {
+                this.viewPanel();
+                this.exitFullscreen();
+              }
+            }
           }
         }, {
           key: 'removeValueMap',
@@ -302,12 +303,12 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
         }, {
           key: 'link',
           value: function link(scope, elem, attrs, ctrl) {
-            //console.log("d3radar inside link");
             var radarByClass = elem.find('.grafana-d3-radarchart');
-            //radarByClass.append('<center><div id="'+ctrl.containerDivId+'"></div></center>');
+            //debugger;
             radarByClass.append('<div id="' + ctrl.containerDivId + '"></div>');
             var container = radarByClass[0].childNodes[0];
             ctrl.setContainer(container);
+            this.forceRender();
             function render() {
               ctrl.renderRadar();
             }
@@ -473,7 +474,7 @@ System.register(['app/plugins/sdk', 'lodash', 'jquery', 'app/core/utils/kbn', 'a
             this.setValues(data);
             this.data = data;
             if (this.radarObject !== null) {
-              this.radarObject.updateRadar(data.value, data.valueFormatted, data.valueRounded);
+              this.radarObject.updateRadarChart(data.value, data.valueFormatted, data.valueRounded);
             } else {
               // render radar
               this.render();
